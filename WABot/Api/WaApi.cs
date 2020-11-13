@@ -164,7 +164,7 @@ namespace WABot.Api
                 { "lat", lat },
                 { "lng", lng },
                 { "address", "Ubicación" },
-                { "chatId", chatID}
+                { "chatId", chatID} 
             };
             return await SendRequest("sendLocation", JsonConvert.SerializeObject(data));
         }
