@@ -190,15 +190,19 @@ namespace WABot.Api
         /// Sends files to the user.
         /// </summary>
         /// <param name="chatID">chat ID</param>
-        /// <param name="format">The format of the desired file.</param>
+        /// <param name="base64">The format of the desired file.</param>
         /// <returns></returns>
-        public async Task<string> SendFile(string chatID, string format)
+        public async Task<string> SendFile(string chatID, string base64)
         {
+            string mensajeTexto = "Hoy 14 de Noviembre, la solidaridad no es un acto de caridad, sino una ayuda mutua entre fuerzas que luchan por el mismo objetivo. \n\n" +
+      "Comparto este mensaje de manera masiva para invitarnos a apoyarnos. \n\n";
+
+
             var data = new Dictionary<string, string>(){
                     { "chatId", chatID },
-                    { "body", format },
-                    { "filename", "Name" },
-                    { "caption", $"Aprovecha nuestra gran promoción" }
+                    { "body", base64 },
+                    { "filename", "img_WhatsApp"},
+                    { "caption", mensajeTexto}
                 };
 
             return await SendRequest("sendFile", JsonConvert.SerializeObject(data));

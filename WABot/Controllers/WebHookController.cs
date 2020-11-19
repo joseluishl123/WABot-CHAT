@@ -30,7 +30,7 @@ namespace WABot.Controllers
         /// A static object that represents the API for a given controller.
         /// </summary>
         /// 
-        private static readonly WaApi api = new WaApi("https://eu213.chat-api.com/instance193395/", "2i6xjbifctyi5fup");
+        private static readonly WaApi api = new WaApi("https://eu113.chat-api.com/instance196144/", "77zr920hrscx8s14");
 
         /// <summary>
         /// Handler of post requests received from chat-api
@@ -67,8 +67,13 @@ namespace WABot.Controllers
             return "";
         }
 
-        [HttpPost]
-        [Route("enviararchivo")]
+        /// <summary>
+        /// Handler of post requests received from chat-api
+        /// </summary>
+        ///// <param name="descripcion">Serialized json object</param>
+        /// <returns></returns>
+        [HttpPost("enviararchivo")]
+        //[Route]
         public async Task<string> EnviarArchivo(Answer data)
         {
             string retornar = "";
