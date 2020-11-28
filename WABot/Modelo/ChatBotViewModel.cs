@@ -21,8 +21,6 @@ namespace WatsonAssistant.Models
             Messages = new ObservableCollection<ChatMessage>();
             OutGoingText = string.Empty;
             iBMWatsonAssistant = new IBMWatsonAssistant();
-
-
         }
 
         ~ChatBotViewModel()

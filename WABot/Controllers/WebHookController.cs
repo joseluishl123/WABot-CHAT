@@ -1,11 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using WABot.Api;
 using WABot.Helpers.Json;
+using WABot.Models;
 using WatsonAssistant.Models;
 
 namespace WABot.Controllers
@@ -30,7 +34,7 @@ namespace WABot.Controllers
         /// A static object that represents the API for a given controller.
         /// </summary>
         /// 
-        private static readonly WaApi api = new WaApi("https://eu113.chat-api.com/instance196144/", "77zr920hrscx8s14");
+        private static readonly WaApi api = new WaApi("https://api.chat-api.com/instance199402/", "xvqrzhh4u015ju8o");
 
         /// <summary>
         /// Handler of post requests received from chat-api
@@ -81,6 +85,7 @@ namespace WABot.Controllers
             {
                 retornar = await api.SendFile(message.ChatId, message.Body);
             }
+
             return retornar;
         }
 
@@ -178,6 +183,45 @@ namespace WABot.Controllers
             return await api.GetRequestmessagesHistory("messagesHistory");
         }
 
+        /// <summary>
+        /// Handler of post requests received from chat-api
+        /// </summary>
+        /// <param name="desde">Serialized json object</param>
+        /// <param name="hasta">Serialized json object</param>
+        /// <returns></returns>
+        [HttpGet("EnvioMasivo/{desde}/{hasta}")]
+        public async Task<ActionResult> EviarMensajesAsync(int desde, int hasta)
+        {
+            try
+            {
+                var pacientes = new HttpClient();
+                var peti = await pacientes.GetAsync($"http://localhost:8080/api/Pacientes/{desde}/{hasta}");
+                var con = await peti.Content.ReadAsStringAsync();
+                var tel = JsonConvert.DeserializeObject<List<Paciente>>(con);
+
+                var x = 0;
+                if (tel != null)
+                {
+                    Console.WriteLine($"Desde {desde} - Hasta {hasta} Total de evio {tel.Count}");
+                    foreach (var item in tel)
+                    {
+                        x++;
+                        var MENSAJE = new List<Message> { new Message { Body = "", ChatId = item.PacTelefono } };
+                        var asower = new Answer();
+                        asower.Messages = MENSAJE;
+                        Console.WriteLine($"[{x}] - {item.PacTelefono}");
+                        var respuesta = await EnviarArchivo(asower);
+                        Console.WriteLine(respuesta);
+                    }
+                }
+
+                return Ok("Tarea Finalizada");
+            }
+            catch (Exception ex)
+            {
+                return Ok(ex.Message);
+            }
+        }
         //[HttpGet("{mensaje}")]
         private async Task<ObservableCollection<ChatMessage>> ChatWhatson(string mensaje)
         {
@@ -192,7 +236,6 @@ namespace WABot.Controllers
             }
             return chat.Messages;
         }
-
 
     }
 }

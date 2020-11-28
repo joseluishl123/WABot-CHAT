@@ -7,7 +7,6 @@ using NSwag;
 using NSwag.Generation.Processors.Security;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using WABot.Data;
 
 namespace WABot
 {
@@ -46,8 +45,8 @@ namespace WABot
                     new AspNetCoreOperationSecurityScopeProcessor("JWT"));
             });
 
-            services.AddDbContext<WABotContext>(options =>
-                    options.UseSqlServer(Configuration.GetConnectionString("WABotContext")));
+            services.AddDbContext<Models.directorioquibdoContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("ChatAngularContext")));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -56,9 +55,7 @@ namespace WABot
             {
                 app.UseDeveloperExceptionPage();
             }
-
             app.UseHttpsRedirection();
-
             app.UseRouting();
 
             app.UseAuthorization();
