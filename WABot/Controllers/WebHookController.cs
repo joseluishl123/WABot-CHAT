@@ -195,7 +195,7 @@ namespace WABot.Controllers
             try
             {
                 var pacientes = new HttpClient();
-                var peti = await pacientes.GetAsync($"http://localhost:8080/api/Pacientes/{desde}/{hasta}");
+                var peti = await pacientes.GetAsync($"https://localhost:5001/api/Pacientes/{desde}/{hasta}");
                 var con = await peti.Content.ReadAsStringAsync();
                 var tel = JsonConvert.DeserializeObject<List<Paciente>>(con);
 
@@ -210,8 +210,8 @@ namespace WABot.Controllers
                         var asower = new Answer();
                         asower.Messages = MENSAJE;
                         Console.WriteLine($"[{x}] - {item.PacTelefono}");
-                        var respuesta = await EnviarArchivo(asower);
-                        Console.WriteLine(respuesta);
+                        //var respuesta = await EnviarArchivo(asower);
+                        //Console.WriteLine(respuesta);
                     }
                 }
 
