@@ -197,8 +197,8 @@ namespace WABot.Controllers
                 var pacientes = new HttpClient();
                 var peti = await pacientes.GetAsync($"https://localhost:5001/api/Pacientes/{desde}/{hasta}");
                 var con = await peti.Content.ReadAsStringAsync();
-                var tel = JsonConvert.DeserializeObject<List<Paciente>>(con);
-
+                var tel = JsonConvert.DeserializeObject<List<Paciente>>(con).OrderByDescending(Op=>Op.PacId).ToList();
+               
                 var x = 0;
                 if (tel != null)
                 {
