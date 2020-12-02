@@ -198,8 +198,26 @@ namespace WABot.Controllers
                 var pacientes = new HttpClient();
                 var peti = await pacientes.GetAsync($"https://localhost:5001/api/Pacientes/{desde}/{hasta}");
                 var con = await peti.Content.ReadAsStringAsync();
-                var tel = JsonConvert.DeserializeObject<List<Paciente>>(con).OrderByDescending(Op=>Op.PacId).ToList();
-               
+                var tel = JsonConvert.DeserializeObject<List<Paciente>>(con).OrderByDescending(Op => Op.PacId).ToList();
+
+                List<int> tiempos = new List<int>();
+                tiempos.Add(720000);
+                tiempos.Add(600000);
+                tiempos.Add(1800000);
+                tiempos.Add(3000000);
+                tiempos.Add(1320000);
+                tiempos.Add(1080000);
+                tiempos.Add(300000);
+                tiempos.Add(480000);
+                tiempos.Add(1980000);
+                tiempos.Add(2220000);
+                tiempos.Add(3120000);
+                tiempos.Add(660000);
+                tiempos.Add(2700000);
+                tiempos.Add(1140000);
+                tiempos.Add(2400000);
+                tiempos.Add(1740000);
+
                 var x = 0;
                 if (tel != null)
                 {
@@ -209,17 +227,21 @@ namespace WABot.Controllers
                         x++;
                         var mensaje = await ChatWhatson("mensaje");
                         var mens = mensaje.FirstOrDefault(Option => Option.IsIncoming == true);
-                        //retornar = await api.SendMessage(message.ChatId, mens.Text);
+                        retornar = await api.SendMessage(message.ChatId, mens.Text);
 
                         string cel = $"573184156945@c.us";
-                        var MENSAJE = new List<Message> { new Message { Body = mens.Text, ChatId = cel} };
+                        var MENSAJE = new List<Message> { new Message { Body = mens.Text, ChatId = cel } };
                         var asower = new Answer();
                         asower.Messages = MENSAJE;
                         Console.WriteLine($"[{x}] - {cel} Enviando");
-                        
+
+
                         var respuesta = await EnviarArchivo(asower);
                         Console.WriteLine(respuesta);//item.PacTelefono  {item.PacTelefono})
-                        await Task.Delay(1200000);
+                        Random r1 = new Random();
+                        int indexBtn = r1.Next(tiempos.Count);
+                        int esperar = tiempos[indexBtn];
+                        await Task.Delay(esperar);
                     }
                 }
 
