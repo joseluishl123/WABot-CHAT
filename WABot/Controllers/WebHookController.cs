@@ -34,7 +34,7 @@ namespace WABot.Controllers
         /// A static object that represents the API for a given controller.
         /// </summary>
         /// 
-        private static readonly WaApi api = new WaApi("https://eu195.chat-api.com/instance200776/", "wuc3wnug10ec4u87");
+        private static readonly WaApi api = new WaApi("https://eu119.chat-api.com/instance201862/", "64s00emspvzy915t");
 
         /// <summary>
         /// Handler of post requests received from chat-api
@@ -227,15 +227,13 @@ namespace WABot.Controllers
                         x++;
                         var mensaje = await ChatWhatson("mensaje");
                         var mens = mensaje.FirstOrDefault(Option => Option.IsIncoming == true);
-                        retornar = await api.SendMessage(message.ChatId, mens.Text);
+                        //retornar = await api.SendMessage(message.ChatId, mens.Text);
 
                         string cel = $"573184156945@c.us";
                         var MENSAJE = new List<Message> { new Message { Body = mens.Text, ChatId = cel } };
                         var asower = new Answer();
                         asower.Messages = MENSAJE;
                         Console.WriteLine($"[{x}] - {cel} Enviando");
-
-
                         var respuesta = await EnviarArchivo(asower);
                         Console.WriteLine(respuesta);//item.PacTelefono  {item.PacTelefono})
                         Random r1 = new Random();
