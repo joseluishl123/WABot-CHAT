@@ -124,6 +124,36 @@ namespace WABot.Controllers
             }
             return retornar;
         }
+        [HttpPost]
+        [Route("enviarmensaje2")]
+        public async Task<string> EnviarMensaje2(Answer data)
+        {
+            string retornar = "";
+            try
+            {
+                if (data != null)
+                {
+                    foreach (var message in data.Messages)
+                    {
+                        if (!message.FromMe)
+                        {
+                            message.FromMe = false;
+                            message.Id = null;
+                            message.MessageNumber = null;
+                            //var mensaje = await ChatWhatson(message.Body);
+                            //var mens = mensaje.FirstOrDefault(Option => Option.IsIncoming == true);
+                            //retornar = await api.SendFile(message.ChatId, mens.Text);
+                            retornar = await api.SendMessage(message.ChatId, message.Body);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                retornar = ex.Message;
+            }
+            return retornar;
+        }
 
         //[HttpPost]
         //[Route("enviarmensaje2")]
@@ -234,11 +264,13 @@ namespace WABot.Controllers
                         var asower = new Answer();
                         asower.Messages = MENSAJE;
                         Console.WriteLine($"[{x}] - {cel} Enviando");
-                        var respuesta = await EnviarArchivo(asower);
+                        //var respuesta = await EnviarArchivo(asower);
+                        var respuesta = await EnviarMensaje2(asower);
                         Console.WriteLine(respuesta);//item.PacTelefono  {item.PacTelefono})
                         Random r1 = new Random();
                         int indexBtn = r1.Next(tiempos.Count);
                         int esperar = tiempos[indexBtn];
+                        Console.WriteLine(esperar);
                         await Task.Delay(esperar);
                     }
                 }
