@@ -47,6 +47,13 @@ namespace WABot
 
             services.AddDbContext<Models.directorioquibdoContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("ChatAngularContext")));
+
+            services.AddDbContext<ModeloTurno.DB_Turnos_WhatsappContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("TurnosWhatsapp")));
+
+            services.AddControllers().AddNewtonsoftJson(options =>
+            options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -34,7 +34,7 @@ namespace WatsonAssistant.Services
                 sessionId: sessionId
                 );
 
-            Console.WriteLine(result.Response);
+            Console.WriteLine("Intencion 3: " + result.Response);
         }
 
         public WatsonMessage Message(string input)
@@ -53,9 +53,10 @@ namespace WatsonAssistant.Services
                     Text = input
                 }
                 );
-            Console.WriteLine(result.Response);
 
+            Console.WriteLine("Intencion 1: " + result.Response);
             return JsonConvert.DeserializeObject<WatsonMessage>(result.Response);
+
         }
 
         public void MessageWithContext()
@@ -94,7 +95,7 @@ namespace WatsonAssistant.Services
                 }
                 );
 
-            Console.WriteLine(result.Response);
+            Console.WriteLine("Intencion 2: " + result.Response);
         }
 
         public void MessageStateless()

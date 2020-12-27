@@ -94,6 +94,9 @@ namespace WatsonAssistant.Models
         [JsonProperty("generic")]
         public Generic[] Generic { get; set; }
 
+        [JsonProperty("intents")]
+        public Intent[] Intents { get; set; }
+
         [JsonProperty("text")]
         public string[] Text { get; set; }
 

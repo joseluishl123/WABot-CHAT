@@ -28,7 +28,6 @@ namespace WatsonAssistant.Models
             iBMWatsonAssistant.DeleteSession();
         }
 
-
         public string OutGoingText
         {
             get
@@ -40,9 +39,6 @@ namespace WatsonAssistant.Models
                 _outGoingText = value;
             }
         }
-
-
-
         //public Task SendCommand => new Task(SendMessage);
 
         public async Task SendMessage()
@@ -53,11 +49,13 @@ namespace WatsonAssistant.Models
                 string temp = OutGoingText;
                 OutGoingText = string.Empty;
 
-                //await Task.Run(() =>
-                //{
+                await Task.Run(() =>
+                {
                     var res = iBMWatsonAssistant.Message(temp);
+                    //Console.WriteLine("Mensaje 1: " + res.Intents);
+                    Console.WriteLine("Mensaje 1: " + JsonConvert.SerializeObject(res));
                     OnWatsonMessagerecieved(JsonConvert.SerializeObject(res, Formatting.Indented));
-                //});
+                });
             }
         }
 
@@ -75,7 +73,6 @@ namespace WatsonAssistant.Models
                         IsIncoming = true,
                         MessageDateTime = DateTime.Now
                     };
-
                     if (item.ResponseType.Equals("image"))
                     {
                         listItem.Image = item.Source.ToString();
@@ -89,12 +86,14 @@ namespace WatsonAssistant.Models
                         listItem.Text += Environment.NewLine + item.Title;
                         //item.Options.First(option => listItem.Text += $"{Environment.NewLine}{option.label}");
                     }
+                    if (message.Output.Intents.Length > 0)
+                    {
+                        listItem.Intencion = message.Output.Intents[0].IntentIntent;
+                    }
+
                     Messages.Add(listItem);
                 }
-
             }
-
         }
-
     }
 }

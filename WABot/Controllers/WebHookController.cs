@@ -1,14 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text;
 using System.Threading.Tasks;
 using WABot.Api;
 using WABot.Helpers.Json;
+using WABot.ModeloTurno;
 using WABot.Models;
 using WatsonAssistant.Models;
 
@@ -34,13 +36,78 @@ namespace WABot.Controllers
         /// A static object that represents the API for a given controller.
         /// </summary>
         /// 
-        private static readonly WaApi api = new WaApi("https://eu119.chat-api.com/instance201862/", "64s00emspvzy915t");
+        private static readonly WaApi api = new WaApi("https://eu182.chat-api.com/instance210152/", "w520uh3nu7nbidnc");
 
         /// <summary>
         /// Handler of post requests received from chat-api
         /// </summary>
-        /// <param name="data">Serialized json object</param>
+        /// <param name="cel">Serialized json object</param>
         /// <returns></returns>
+        [HttpGet]
+        [Route("Prueba/{cel}")]
+        public async Task<string> GenerarTurno(string cel)
+        {
+            //var urlBase = "https://localhost:5001/api/Personas";
+            var http = new HttpClient();
+            var per = await http.GetAsync($"https://wabot20201202085345.azurewebsites.net/api/Personas/celular/{cel}");
+            //var per = await http.GetFromJsonAsync<Persona>($"{urlBase}/celular/{cel}");
+            Persona persona = new Persona();
+            int? idPersona = null;
+            if (per.IsSuccessStatusCode)
+            {
+                var cont = await per.Content.ReadAsStringAsync();
+                var perso = JsonConvert.DeserializeObject<Persona>(cont);
+                if (perso == null)
+                {
+                    //return Ok("La persona ya existe");
+                    persona = new Persona { PerTelefono = cel, Turnos = null };
+                    idPersona = null;
+                }
+                else
+                {
+                    idPersona = perso.PerId;
+                    persona = null;
+                }
+            }
+            else
+            {
+                persona = new Persona { PerTelefono = cel, Turnos = null };
+            }
+
+            var turno = new Turno
+            {
+                TurnIdPacienteNavigation = persona,
+                TurnIdPaciente = idPersona,
+                TurnCodigo = Guid.NewGuid().ToString(),
+                TurnFecha = DateTime.Now.ToString(),
+                TurnEstado = 1,
+            };
+
+            var body = JsonConvert.SerializeObject(turno);
+            var content = new StringContent(body, Encoding.UTF8, "application/json");
+            var response = await http.PostAsync($"https://wabot20201202085345.azurewebsites.net/api/Turnoes", content);
+            //var response = await http.PostAsJsonAsync<Persona> ($"{urlBase}/Personas",persona);
+            //var p = await http.PostAsJsonAsync($"{urlBase}/Personas", content);
+            if (response.IsSuccessStatusCode)
+            {
+                var con = await response.Content.ReadAsStringAsync();
+                var perso = JsonConvert.DeserializeObject<Turno>(con);
+                return ($"Su turno se ha generado correctamente \n\n " +
+                    $"Codigo: {perso.TurnId} \n " +
+                    $"Fecha y hora: {perso.TurnFecha} \n " +
+                    $"Estado: {perso.TurnEstadoNavigation.EstDescripcion}");
+            }
+            else
+            {
+                return (response.IsSuccessStatusCode.ToString());
+            }
+
+            return "";
+        }
+
+
+
+
         [HttpPost]
         public async Task<string> Post(Answer data)
         {
@@ -94,6 +161,57 @@ namespace WABot.Controllers
         ///// </summary>
         ///// <param name="token">Serialized json object</param>
         ///// <returns></returns>
+
+        [HttpPost]
+        [Route("MensajeTurno")]
+        public async Task<string> EnviarMensajeTurno(Answer data, string token)
+        {
+            string retornar = "";
+            try
+            {
+                if (data != null)
+                {
+                    foreach (var message in data.Messages)
+                    {
+                        if (!message.FromMe)
+                        {
+                            message.FromMe = false;
+                            message.Id = null;
+                            message.MessageNumber = null;
+                            var mensaje = await ChatWhatson(message.Body);
+                            var mens = mensaje.FirstOrDefault(Option => Option.IsIncoming == true);
+                            string mensajeEnviar = mens.Text;
+                            if (mens.Intencion == "SolicitarTurno")
+                            {
+                                var generarTurno = await GenerarTurno(message.ChatId.Replace("57", "").Replace("@c.us", ""));
+                                mensajeEnviar = generarTurno;
+                            }
+
+                            if (mens.Intencion == "SolicitarAvance")
+                            {
+                                var avance = await SolicitarAvance();
+                                mensajeEnviar = (avance == null) ? "Lo sentimos ubo un error al consultar" : avance;
+                            }
+
+                            retornar = await api.SendMessage(message.ChatId, mensajeEnviar);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                retornar = ex.Message;
+            }
+            return retornar;
+        }
+
+
+        ///// <summary>
+        ///// Handler of post requests received from chat-api
+        ///// </summary>
+        ///// <param name="token">Serialized json object</param>
+        ///// <returns></returns>
+
         [HttpPost]
         [Route("enviarmensaje")]
         public async Task<string> EnviarMensaje(Answer data, string token)
@@ -110,9 +228,9 @@ namespace WABot.Controllers
                             message.FromMe = false;
                             message.Id = null;
                             message.MessageNumber = null;
-                            var mensaje = await ChatWhatson(message.Body);
-                            var mens = mensaje.FirstOrDefault(Option => Option.IsIncoming == true);
-                            retornar = await api.SendFile(message.ChatId, mens.Text);
+                            //var mensaje = await ChatWhatson(message.Body);
+                            //var mens = mensaje.FirstOrDefault(Option => Option.IsIncoming == true);
+                            retornar = await api.SendFile(message.ChatId, "");
                             //retornar = await api.SendMessage(message.ChatId, mens.Text);
                         }
                     }
@@ -124,6 +242,8 @@ namespace WABot.Controllers
             }
             return retornar;
         }
+
+
         [HttpPost]
         [Route("enviarmensaje2")]
         public async Task<string> EnviarMensaje2(Answer data)
@@ -142,8 +262,8 @@ namespace WABot.Controllers
                             message.MessageNumber = null;
                             //var mensaje = await ChatWhatson(message.Body);
                             //var mens = mensaje.FirstOrDefault(Option => Option.IsIncoming == true);
-                            //retornar = await api.SendFile(message.ChatId, mens.Text);
-                            retornar = await api.SendMessage(message.ChatId, message.Body);
+                            retornar = await api.SendFile(message.ChatId, "");
+                            //retornar = await api.SendMessage(message.ChatId, mens.Text);
                         }
                     }
                 }
@@ -204,7 +324,20 @@ namespace WABot.Controllers
         [HttpGet]
         public async Task<Answer> GetMensajes(string chatid)
         {
-            return await api.GetRequestGet("messages", chatid);
+            var mensajes = await api.GetRequestGet("messages", chatid);
+            var msn = mensajes.Messages.Where(s => s.FromMe == false).ToList();
+            msn = msn.OrderByDescending(s => s.MessageNumber).ToList();
+            var res = new Answer  { InstanceId = mensajes.InstanceId, Messages = msn };
+            return res;
+        }
+
+        [HttpGet]
+        [Route("MensajeAnterior")]
+        public async Task<string> GetMensajeAnterior(string chatid)
+        {
+            var mensaje = await GetMensajes(chatid);
+            var ultimo = (mensaje.Messages != null && mensaje.Messages.Count > 0) ? mensaje.Messages[1].Body : null;
+            return ultimo;
         }
 
         [HttpGet]
@@ -255,9 +388,12 @@ namespace WABot.Controllers
                     foreach (var item in tel)
                     {
                         x++;
-                        var mensaje = await ChatWhatson("mensaje");
-                        var mens = mensaje.FirstOrDefault(Option => Option.IsIncoming == true);
-                        //retornar = await api.SendMessage(message.ChatId, mens.Text);
+                        //var mensaje = await ChatWhatson("mensaje");
+                        var http = new HttpClient();
+                        var get = await http.GetAsync($"https://localhost:5001/api/Watson/mensaje");
+                        var contenido = await get.Content.ReadAsStringAsync();
+                        var res = JsonConvert.DeserializeObject<ObservableCollection<ChatMessage>>(contenido);
+                        var mens = res.FirstOrDefault(Option => Option.IsIncoming == true);
 
                         string cel = $"573184156945@c.us";
                         var MENSAJE = new List<Message> { new Message { Body = mens.Text, ChatId = cel } };
@@ -295,6 +431,27 @@ namespace WABot.Controllers
                 Console.WriteLine(ex.ToString());
             }
             return chat.Messages;
+        }
+        private async Task<string> SolicitarAvance()
+        {
+            var http = new HttpClient();
+            var per = await http.GetAsync($"https://wabot20201202085345.azurewebsites.net/api/Turnoes");
+            var turno_ = new List<Turno>();
+            string respuesta = "";
+            if (per.IsSuccessStatusCode)
+            {
+                var cont = await per.Content.ReadAsStringAsync();
+                var turnoSerializado = JsonConvert.DeserializeObject<List<Turno>>(cont);
+                if (turnoSerializado.Count > 0)
+                {
+                    respuesta = $"Va en el turno: {turnoSerializado[0].TurnId} \n " +
+                        $"espero que seas el siguiente \n " +
+                        $"Bye";
+                    //turnoSerializado = turnoSerializado.OrderByDescending(s => s.TurnId).ToList();
+                    //return Ok("La persona ya existe");
+                }
+            }
+            return respuesta;
         }
 
     }
