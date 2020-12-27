@@ -106,8 +106,6 @@ namespace WABot.Controllers
         }
 
 
-
-
         [HttpPost]
         public async Task<string> Post(Answer data)
         {
@@ -181,10 +179,27 @@ namespace WABot.Controllers
                             var mensaje = await ChatWhatson(message.Body);
                             var mens = mensaje.FirstOrDefault(Option => Option.IsIncoming == true);
                             string mensajeEnviar = mens.Text;
-                            if (mens.Intencion == "SolicitarTurno")
+                            //if (mens.Intencion == "SolicitarTurno")
+                            //{
+                            //    var generarTurno = await GenerarTurno(message.ChatId.Replace("57", "").Replace("@c.us", ""));
+                            //    mensajeEnviar = generarTurno;
+                            //}
+
+                            if (mens.Intencion == "Confirmar")
                             {
-                                var generarTurno = await GenerarTurno(message.ChatId.Replace("57", "").Replace("@c.us", ""));
-                                mensajeEnviar = generarTurno;
+                                var ultimoMensajeHttp = await ObtenerUltimoMensaje(message.ChatId);
+                                var mensajeUltimo = await ChatWhatson(ultimoMensajeHttp);
+                                var mensUltimo = mensajeUltimo.Where(Option => Option.IsIncoming == true).ToList();
+                                if (mensUltimo[mensUltimo.Count - 1].Intencion == "SolicitarTurno")
+                                {
+                                    var generarTurno = await GenerarTurno(message.ChatId.Replace("57", "").Replace("@c.us", ""));
+                                    mensajeEnviar = generarTurno;
+                                }
+                                else
+                                {
+                                    mensajeEnviar = "Opcion no valida";
+                                }
+
                             }
 
                             if (mens.Intencion == "SolicitarAvance")
@@ -327,7 +342,7 @@ namespace WABot.Controllers
             var mensajes = await api.GetRequestGet("messages", chatid);
             var msn = mensajes.Messages.Where(s => s.FromMe == false).ToList();
             msn = msn.OrderByDescending(s => s.MessageNumber).ToList();
-            var res = new Answer  { InstanceId = mensajes.InstanceId, Messages = msn };
+            var res = new Answer { InstanceId = mensajes.InstanceId, Messages = msn };
             return res;
         }
 
@@ -419,7 +434,7 @@ namespace WABot.Controllers
             }
         }
         //[HttpGet("{mensaje}")]
-        private async Task<ObservableCollection<ChatMessage>> ChatWhatson(string mensaje)
+        private async Task<List<ChatMessage>> ChatWhatson(string mensaje)
         {
             try
             {
@@ -449,6 +464,23 @@ namespace WABot.Controllers
                         $"Bye";
                     //turnoSerializado = turnoSerializado.OrderByDescending(s => s.TurnId).ToList();
                     //return Ok("La persona ya existe");
+                }
+            }
+            return respuesta;
+        }
+
+        private async Task<string> ObtenerUltimoMensaje(string cel)
+        {
+            //cel = $"57{cel}@c.us";
+            var http = new HttpClient();
+            var per = await http.GetAsync($"https://wabot20201202085345.azurewebsites.net/MensajeAnterior?chatid={cel}");
+            string respuesta = "";
+            if (per.IsSuccessStatusCode)
+            {
+                var cont = await per.Content.ReadAsStringAsync();
+                if (!string.IsNullOrEmpty(cont))
+                {
+                    respuesta = cont;
                 }
             }
             return respuesta;

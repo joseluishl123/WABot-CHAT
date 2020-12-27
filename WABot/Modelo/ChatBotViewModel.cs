@@ -6,19 +6,20 @@ using System.Windows.Input;
 
 using WatsonAssistant.Services;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace WatsonAssistant.Models
 {
     public class ChatBotViewModel
     {
         private string _outGoingText;
-        public ObservableCollection<ChatMessage> Messages { get; }
+        public List<ChatMessage> Messages { get; }
 
         public readonly IBMWatsonAssistant iBMWatsonAssistant;
 
         public ChatBotViewModel()
         {
-            Messages = new ObservableCollection<ChatMessage>();
+            Messages = new List<ChatMessage>();
             OutGoingText = string.Empty;
             iBMWatsonAssistant = new IBMWatsonAssistant();
         }

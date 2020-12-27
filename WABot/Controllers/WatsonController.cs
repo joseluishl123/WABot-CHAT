@@ -31,7 +31,7 @@ namespace WABot.Controllers
         /// <returns></returns>
         /// 
         [HttpGet("{mensaje}")]
-        public async Task<ActionResult<ObservableCollection<ChatMessage>>> Post(string mensaje)
+        public async Task<ActionResult<List<ChatMessage>>> Post(string mensaje)
         {
             try
             {
