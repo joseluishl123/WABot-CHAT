@@ -134,6 +134,13 @@ namespace WABot.Api
             };
             return await SendRequest("sendMessage", JsonConvert.SerializeObject(data));
         }
+        public  string MessageDefaul()
+        {
+            var defecto = "Expande tu servicio al cliente \n" +
+                          "Automatiza la atención y revoluciona la experiencia en Whatsapp con el bot conversacional con Inteligencia Artificial \n\n"+
+                          "| Automatiza el canal nº 1 de mensajería |";
+            return defecto;
+        }
 
         /// <summary>
         /// Sends a voice message

@@ -25,7 +25,7 @@ namespace WatsonAssistant.Models
 
         ~ChatBotViewModel()
         {
-            iBMWatsonAssistant.DeleteSession();
+            //iBMWatsonAssistant.DeleteSession();
         }
 
 
